@@ -19,37 +19,78 @@ const Player = (name, mark) => {
 
 const gameBoard = (() => {
     const gameBoard = document.querySelector('.gameboard');
-    let board = ['O', '', '', '', '', '', '', '', ''];
     const cells = gameBoard.querySelectorAll('div');
-    const playerOne = Player('Michał', 'X');
-    
+    let board = ['', '', '', '', '', '', '', '', ''];
+
     const renederBoard = () => {
-        cells.forEach(cell => {
-            cell.addEventListener('click', () => {
-                fillBoard(cell);
-                cell.textContent = board[cell.getAttribute('id')];
-            })
-        });
-    };
-    
-    const fillBoard = (cell) => {
         for (let i = 0; i < board.length; i++) {
-            if (Number(cell.getAttribute('id')) === i) {
-                board[i] = playerOne.markCell();
-                console.log(board);
-            }
-            
+            cells[i].textContent = board[i];
         }
-    }
+    };
+
+    const fillBoard = (playerMark, cell) => {
+        let cellID;
+
+        if (isNaN(cell)) {
+            cellID = Number(cell.getAttribute('id'));
+        } else {
+            cellID = cell;
+        }
+            
+        if (board[cellID] === '') {
+            board[cellID] = playerMark;
+        } else {
+            return;
+        }
+        
+        console.log(cellID);
+        console.log(board);
     
-    renederBoard();
+        renederBoard();
+    };
+
+    const getIndexOfEmptyCells = () => {
+        const element = '';
+        let emptyArr = [];
+        let index = board.indexOf(element);
+
+        while (index != -1) {
+            emptyArr.push(index);
+            index = board.indexOf(element, index + 1);
+        }
+
+        return emptyArr;
+    };
 
     return {
-        renederBoard
+        fillBoard,
+        cells,
+        getIndexOfEmptyCells
     }
 })();
 
 const gameState = (() => {
+    const playerOne = Player('Michał', 'X');
+    const playerTwo = Player('AI', 'O');
+
+    const playerChoice = playerOne.markCell();
+    const computerChoice = playerTwo.markCell();
+
+    gameBoard.cells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            gameBoard.fillBoard(playerChoice, cell);
+            setTimeout(computerPlay, 700);
+           
+        });
+    });
+
+    const computerPlay = () => {
+        const freeCells = gameBoard.getIndexOfEmptyCells();
+        const computerPick = freeCells[Math.round(Math.random() * freeCells.length - 1)];
+        let choice = gameBoard.fillBoard(computerChoice, computerPick);
+        return choice;
+    };
+
     
-    //const playerTwo = Player('AI', 'O');
+
 })();
