@@ -16,7 +16,6 @@ const Player = (name, mark) => {
     }
 };
 
-
 const gameBoard = (() => {
     const gameBoard = document.querySelector('.gameboard');
     const cells = gameBoard.querySelectorAll('div');
@@ -42,10 +41,7 @@ const gameBoard = (() => {
         } else {
             return;
         }
-        
-        console.log(cellID);
-        console.log(board);
-    
+                
         renederBoard();
     };
 
@@ -62,35 +58,62 @@ const gameBoard = (() => {
         return emptyArr;
     };
 
+    window.addEventListener('load', () => {
+        cells.forEach(cell => {
+            cell.addEventListener('click', gameState.playGame);
+        });
+    });
+    
     return {
         fillBoard,
         cells,
-        getIndexOfEmptyCells
+        getIndexOfEmptyCells,
+        board
     }
 })();
 
 const gameState = (() => {
     const playerOne = Player('Michał', 'X');
     const playerTwo = Player('AI', 'O');
-
     const playerChoice = playerOne.markCell();
     const computerChoice = playerTwo.markCell();
+    const winCondtitions = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+                            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                            [0, 4, 8], [2, 4, 6]];
+    let turn = true;
 
-    gameBoard.cells.forEach(cell => {
-        cell.addEventListener('click', () => {
-            gameBoard.fillBoard(playerChoice, cell);
-            setTimeout(computerPlay, 700);
-           
+    const playGame = (e) => {
+        const currentCell = Number(e.target.getAttribute('id'));
+
+        if (e.target.textContent === '') {
+            turn ? gameBoard.fillBoard(playerChoice, currentCell) : gameBoard.fillBoard(computerChoice, currentCell);                   
+            turn = !turn;
+        } else {
+            return;
+        }
+        
+        const showWinner = winCheck(gameBoard.board);
+    }
+
+    
+    const winCheck = (arr) => {
+        winCondtitions.forEach(condition => {
+            if (arr[condition[0]] && arr[condition[0]] === arr[condition[1]] && arr[condition[0]] === arr[condition[2]]) {
+                if (arr[condition[0]] === playerChoice) {
+                    playerOne.playerWins();
+                }
+            } 
         });
-    });
+    }; 
 
+    
     const computerPlay = () => {
         const freeCells = gameBoard.getIndexOfEmptyCells();
         const computerPick = freeCells[Math.round(Math.random() * freeCells.length - 1)];
-        let choice = gameBoard.fillBoard(computerChoice, computerPick);
-        return choice;
+        gameBoard.fillBoard(computerChoice, computerPick);
     };
 
-    
-
+    return {
+        playGame,
+    }
 })();
