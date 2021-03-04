@@ -1,5 +1,15 @@
+:root {
+    --background-color: #eaac8b;
+    --grid-borders: #355070;
+    --mark-color: #820263;
+}
+
 * {
     box-sizing: border-box;
+}
+
+body {
+    background-color: var(--background-color);
 }
 
 .container {
@@ -11,11 +21,30 @@
 
 .gameboard {
     display: grid;
-    grid-template-columns: repeat(3, 200px);
-    grid-template-rows: repeat(3, 200px);
+    grid-template-columns: repeat(3, 150px);
+    grid-template-rows: repeat(3, 150px);
+    justify-content: center;
+    margin-top: 10vh;
+    color: var(--mark-color);
+    font-family: 'Roboto', sans-serif;
 }
 
 .gameboard div {
-    border: 1px solid black;
-    font-size: 100px;
+    font-size: 80px;
+    display: grid;
+    align-items: center;
+    border: none;
+}
+
+.gameboard div:nth-child(1), div:nth-child(2), div:nth-child(4), div:nth-child(5) {
+    border-right: 4px solid var(--grid-borders);
+    border-bottom: 4px solid var(--grid-borders);
+}
+
+.gameboard div:nth-child(3), div:nth-child(6) {
+    border-bottom: 4px solid var(--grid-borders);
+}
+
+.gameboard div:nth-child(7), div:nth-child(8) {
+    border-right: 4px solid var(--grid-borders);
 }

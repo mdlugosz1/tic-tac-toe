@@ -19,6 +19,7 @@ const Player = (name, mark) => {
 const gameBoard = (() => {
     const gameBoard = document.querySelector('.gameboard');
     const cells = gameBoard.querySelectorAll('div');
+    const restartButton = document.querySelector('.restart');
     let board = ['', '', '', '', '', '', '', '', ''];
 
     const renederBoard = () => {
@@ -41,7 +42,7 @@ const gameBoard = (() => {
         } else {
             return;
         }
-                
+
         renederBoard();
     };
 
@@ -58,17 +59,29 @@ const gameBoard = (() => {
         return emptyArr;
     };
 
-    window.addEventListener('load', () => {
+    const restartGame = () => {
+        for (let i = 0; i < board.length; i++) {
+            board[i] = '';
+        }
+
+        renederBoard();
+        divListeners();
+    };
+
+    const divListeners = () => {
         cells.forEach(cell => {
             cell.addEventListener('click', gameState.playGame);
         });
-    });
+    };
+
+    window.addEventListener('load', divListeners);   
+    restartButton.addEventListener('click', restartGame);
     
     return {
         fillBoard,
-        cells,
         getIndexOfEmptyCells,
-        board
+        board,
+        cells
     }
 })();
 
@@ -91,19 +104,35 @@ const gameState = (() => {
         } else {
             return;
         }
-        
-        const showWinner = winCheck(gameBoard.board);
-    }
 
-    
-    const winCheck = (arr) => {
+        winCheck(gameBoard.board, gameBoard.cells);
+    };
+
+    const winCheck = (arr, cells) => {
+        let winner = false;
         winCondtitions.forEach(condition => {
             if (arr[condition[0]] && arr[condition[0]] === arr[condition[1]] && arr[condition[0]] === arr[condition[2]]) {
                 if (arr[condition[0]] === playerChoice) {
                     playerOne.playerWins();
+                } else {
+                    playerTwo.playerWins();
                 }
-            } 
+
+                cells.forEach(cell => {
+                    cell.removeEventListener('click', playGame);
+                });
+
+                turn = true;
+                winner = true;
+            }
         });
+
+        const tieCheck = (indexes) => indexes !== '';
+
+        if (arr.every(tieCheck) && !winner) {
+            alert('tie');
+            turn = true;
+        };
     }; 
 
     
@@ -115,5 +144,6 @@ const gameState = (() => {
 
     return {
         playGame,
+        winCheck
     }
 })();
