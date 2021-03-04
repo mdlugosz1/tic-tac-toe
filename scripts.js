@@ -135,7 +135,6 @@ const gameState = (() => {
         };
     }; 
 
-    
     const computerPlay = () => {
         const freeCells = gameBoard.getIndexOfEmptyCells();
         const computerPick = freeCells[Math.round(Math.random() * freeCells.length - 1)];
