@@ -29,17 +29,10 @@ const gameBoard = (() => {
     };
 
     const fillBoard = (playerMark, cell) => {
-        let cellID;
-
-        if (isNaN(cell)) {
-            cellID = Number(cell.getAttribute('id'));
+        if (board[cell] === '') {
+            board[cell] = playerMark;
         } else {
-            cellID = cell;
-        }
-            
-        if (board[cellID] === '') {
-            board[cellID] = playerMark;
-        } else {
+            console.log('zle');
             return;
         }
 
@@ -50,12 +43,12 @@ const gameBoard = (() => {
         const element = '';
         let emptyArr = [];
         let index = board.indexOf(element);
-
+        
         while (index != -1) {
             emptyArr.push(index);
             index = board.indexOf(element, index + 1);
         }
-
+        
         return emptyArr;
     };
 
@@ -94,13 +87,19 @@ const gameState = (() => {
                             [0, 3, 6], [1, 4, 7], [2, 5, 8],
                             [0, 4, 8], [2, 4, 6]];
     let turn = true;
+    let gameMode = '';
 
     const playGame = (e) => {
-        const currentCell = Number(e.target.getAttribute('id'));
+        const currentCell = e.target.getAttribute('id');
 
         if (e.target.textContent === '') {
-            turn ? gameBoard.fillBoard(playerChoice, currentCell) : gameBoard.fillBoard(computerChoice, currentCell);                   
-            turn = !turn;
+            if (gameMode === 'pvp') {
+                turn ? gameBoard.fillBoard(playerChoice, currentCell) : gameBoard.fillBoard(computerChoice, currentCell);
+                turn = !turn;
+            } else {
+                gameBoard.fillBoard(playerChoice, currentCell);
+                setTimeout(computerPlay, 500);
+            }
         } else {
             return;
         }
@@ -137,8 +136,9 @@ const gameState = (() => {
 
     const computerPlay = () => {
         const freeCells = gameBoard.getIndexOfEmptyCells();
-        const computerPick = freeCells[Math.round(Math.random() * freeCells.length - 1)];
-        gameBoard.fillBoard(computerChoice, computerPick);
+        const choice = freeCells[Math.round(Math.random() * (freeCells.length - 1))];
+        gameBoard.fillBoard(computerChoice, choice);
+        winCheck(gameBoard.board, gameBoard.cells);
     };
 
     return {

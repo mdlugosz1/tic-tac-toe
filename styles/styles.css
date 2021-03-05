@@ -39,6 +39,7 @@ body {
 }
 
 .main-screen h3 {
+    margin-top: 400px;
     grid-row: 1/2;
 }
 
