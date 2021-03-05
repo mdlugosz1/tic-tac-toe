@@ -32,11 +32,11 @@ const gameBoard = (() => {
         if (board[cell] === '') {
             board[cell] = playerMark;
         } else {
-            console.log('zle');
             return;
         }
-
+        
         renederBoard();
+        gameState.winCheck(board, cells);
     };
 
     const getIndexOfEmptyCells = () => {
@@ -57,11 +57,12 @@ const gameBoard = (() => {
             board[i] = '';
         }
 
+        gameState.resetValues();
         renederBoard();
         divListeners();
     };
 
-    const divListeners = () => {
+    const divListeners = () => {        
         cells.forEach(cell => {
             cell.addEventListener('click', gameState.playGame);
         });
@@ -73,7 +74,6 @@ const gameBoard = (() => {
     return {
         fillBoard,
         getIndexOfEmptyCells,
-        board,
         cells
     }
 })();
@@ -87,28 +87,26 @@ const gameState = (() => {
                             [0, 3, 6], [1, 4, 7], [2, 5, 8],
                             [0, 4, 8], [2, 4, 6]];
     let turn = true;
-    let gameMode = '';
+    let gameMode = ''; 
+    let winner = false;   
 
     const playGame = (e) => {
         const currentCell = e.target.getAttribute('id');
-
+        
         if (e.target.textContent === '') {
             if (gameMode === 'pvp') {
                 turn ? gameBoard.fillBoard(playerChoice, currentCell) : gameBoard.fillBoard(computerChoice, currentCell);
                 turn = !turn;
             } else {
-                gameBoard.fillBoard(playerChoice, currentCell);
-                setTimeout(computerPlay, 500);
+                gameBoard.fillBoard(playerChoice, currentCell);               
+                setTimeout(computerPlay, 300);
             }
         } else {
             return;
         }
-
-        winCheck(gameBoard.board, gameBoard.cells);
     };
 
     const winCheck = (arr, cells) => {
-        let winner = false;
         winCondtitions.forEach(condition => {
             if (arr[condition[0]] && arr[condition[0]] === arr[condition[1]] && arr[condition[0]] === arr[condition[2]]) {
                 if (arr[condition[0]] === playerChoice) {
@@ -121,28 +119,33 @@ const gameState = (() => {
                     cell.removeEventListener('click', playGame);
                 });
 
-                turn = true;
                 winner = true;
-            }
+            } 
         });
 
         const tieCheck = (indexes) => indexes !== '';
 
         if (arr.every(tieCheck) && !winner) {
             alert('tie');
-            turn = true;
-        };
+        };        
     }; 
 
+    const resetValues = () => {
+        turn = true;
+        winner = false;
+    };
+
     const computerPlay = () => {
-        const freeCells = gameBoard.getIndexOfEmptyCells();
-        const choice = freeCells[Math.round(Math.random() * (freeCells.length - 1))];
-        gameBoard.fillBoard(computerChoice, choice);
-        winCheck(gameBoard.board, gameBoard.cells);
+        if (!winner) {
+            const freeCells = gameBoard.getIndexOfEmptyCells();
+            const choice = freeCells[Math.round(Math.random() * (freeCells.length - 1))];
+            gameBoard.fillBoard(computerChoice, choice);
+        }      
     };
 
     return {
         playGame,
-        winCheck
+        winCheck,
+        resetValues
     }
 })();
