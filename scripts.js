@@ -12,7 +12,8 @@ const Player = (name, mark) => {
 
     return {
         markCell,
-        playerWins
+        playerWins,
+        getName
     }
 };
 
@@ -20,6 +21,13 @@ const gameBoard = (() => {
     const gameBoard = document.querySelector('.gameboard');
     const cells = gameBoard.querySelectorAll('div');
     const restartButton = document.querySelector('.restart');
+    const gamemodeChoice = document.querySelectorAll('[data-game-mode]');
+    const startScreen = document.querySelector('.start-screen');
+    const playerOneName = document.querySelector('#player-one');
+    const playerTwoName = document.querySelector('#player-two');
+    const p1 = document.querySelector('#p1name');
+    const submitPlayers = document.querySelector('.submit');
+    let gameMode = '';
     let board = ['', '', '', '', '', '', '', '', ''];
 
     const renederBoard = () => {
@@ -34,7 +42,7 @@ const gameBoard = (() => {
         } else {
             return;
         }
-        
+
         renederBoard();
         gameState.winCheck(board, cells);
     };
@@ -43,12 +51,12 @@ const gameBoard = (() => {
         const element = '';
         let emptyArr = [];
         let index = board.indexOf(element);
-        
+
         while (index != -1) {
             emptyArr.push(index);
             index = board.indexOf(element, index + 1);
         }
-        
+
         return emptyArr;
     };
 
@@ -62,43 +70,69 @@ const gameBoard = (() => {
         divListeners();
     };
 
-    const divListeners = () => {        
+    const divListeners = () => {
         cells.forEach(cell => {
             cell.addEventListener('click', gameState.playGame);
         });
+
+        gamemodeChoice.forEach(gamemode => {gamemode.addEventListener('click', setGameMode);});
     };
 
-    window.addEventListener('load', divListeners);   
+    const setGameMode = (e) => {
+        startScreen.style.display = 'none';
+        gameMode = e.target.dataset.gameMode;
+    };
+
+    const getGameMode = () => {
+        return gameMode;
+    };
+
+    const getPlayers = () => {
+        const playerOne = Player(playerOneName.value, 'X');
+        const playerTwo = Player(playerTwoName.value, 'O');
+
+        p1.textContent = playerOne.getName();
+
+        return {
+            playerOne,
+            playerTwo
+        }
+    };
+
+    submitPlayers.addEventListener('click', getPlayers);
+    window.addEventListener('load', divListeners);
     restartButton.addEventListener('click', restartGame);
-    
+
     return {
         fillBoard,
         getIndexOfEmptyCells,
-        cells
+        getGameMode,
+        getPlayers
     }
 })();
 
+
 const gameState = (() => {
-    const playerOne = Player('Michał', 'X');
+    const playerOne = gameBoard.getPlayers().playerOne;
     const playerTwo = Player('AI', 'O');
     const playerChoice = playerOne.markCell();
     const computerChoice = playerTwo.markCell();
     const winCondtitions = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
-                            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-                            [0, 4, 8], [2, 4, 6]];
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]];
     let turn = true;
-    let gameMode = ''; 
-    let winner = false;   
+    let winner = false;
 
     const playGame = (e) => {
         const currentCell = e.target.getAttribute('id');
+        const currentGameMode = gameBoard.getGameMode();
         
         if (e.target.textContent === '') {
-            if (gameMode === 'pvp') {
+            if (currentGameMode === 'pvp') {
                 turn ? gameBoard.fillBoard(playerChoice, currentCell) : gameBoard.fillBoard(computerChoice, currentCell);
                 turn = !turn;
             } else {
-                gameBoard.fillBoard(playerChoice, currentCell);               
+                gameBoard.fillBoard(playerChoice, currentCell);
                 setTimeout(computerPlay, 300);
             }
         } else {
@@ -120,15 +154,15 @@ const gameState = (() => {
                 });
 
                 winner = true;
-            } 
+            }
         });
 
         const tieCheck = (indexes) => indexes !== '';
 
         if (arr.every(tieCheck) && !winner) {
             alert('tie');
-        };        
-    }; 
+        };
+    };
 
     const resetValues = () => {
         turn = true;
@@ -140,7 +174,7 @@ const gameState = (() => {
             const freeCells = gameBoard.getIndexOfEmptyCells();
             const choice = freeCells[Math.round(Math.random() * (freeCells.length - 1))];
             gameBoard.fillBoard(computerChoice, choice);
-        }      
+        }
     };
 
     return {

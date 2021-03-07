@@ -13,25 +13,51 @@
 </head>
 
 <body>
+    <div class="start-screen">
+        <div class="container">
+            <h2>Choose with who you want to play</h2>
+            <button class="gamemode" data-game-mode="pvp">Versus another player</button>
+            <button class="gamemode" data-game-mode="easy">Versus computer (easy mode)</button>
+            <button class="gamemode" data-game-mode="unbeatable">Versus computer (unbeatable)</button>
+        </div>
+    </div>
+
+    <form class="player-names">
+        <div class="container">
+            <div class="player-one-input">
+                <label for="player-one">Player 1 name:</label>
+                <input type="text" name="player-one-name" id="player-one">
+            </div>
+    
+            <div class="player-two-input">
+                <label for="player-two">Player 2 name:</label>
+                <input type="text" name="player-two-name" id="player-two">
+            </div>
+            <button type="button" class="submit">Start Game</button>
+        </div>
+    </form>
+
     <header>
         <div class="container">
             <h1>Tic-Tac-Toe</h1>
         </div>
     </header>
     <main>
-        <!-- <div class="main-screen">
+        <div class="player-scores">
             <div class="container">
-                <h3>Choose with who you want to play</h3>
-                <button class="another-player">Versus another player</button>
-                <button class="computer">Versus computer (easy mode)</button>
-                <button class="unbeatable">Versus computer (unbeatable)</button>
+                <div class="player-one">
+                    <p id="p1name"></p>
+                    <p id="p1points">0</p>
+                </div>
+                <p class="endgame"></p>
+                <div class="player-two">
+                    <p id="p2name">Player 1</p>
+                    <p id="p2points">0</p>
+                </div>
+                <button class="restart">restart</button>
             </div>
-        </div> -->
-
-        <div class="container">
-            <p></p>
-            <button class="restart">restart</button>
         </div>
+
 
         <div class="container">
             <div class="gameboard">
