@@ -91,7 +91,7 @@ body {
     grid-column: 1/4;
     width: 10%;
     place-self: center;
-    visibility: hidden;
+    visibility: visible;
 }
 
 #p1points, #p2points {
