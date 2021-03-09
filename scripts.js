@@ -2,14 +2,14 @@ const Player = (name, mark) => {
     const getName = () => name;
     const getMark = () => mark;
 
-    const playerWins = () => {
-        alert(`${getName()} wins!`);
+    const playerWins = (winInfo) => {
+        winInfo.textContent = `${getName()} wins!`;
     };
 
     return {
         getMark,
         playerWins,
-        getName
+        getName,
     }
 };
 
@@ -36,7 +36,16 @@ const gameBoard = (() => {
         }
 
         renederBoard();
-        gameState.winCheck(board, cells);
+
+        let isWin = gameState.winCheck(board);
+
+        if (isWin) {
+            cells.forEach(cell => {
+                cell.removeEventListener('click', gameState.playGame);
+            });
+        }
+
+        gameState.tieCheck(board);
     };
 
     const getIndexOfEmptyCells = () => {
@@ -73,10 +82,10 @@ const gameBoard = (() => {
     const setGameMode = (e) => {
         startScreen.style.display = 'none';
         gameMode = e.target.dataset.gameMode;
-        const playerTwoName = document.querySelector('#player-two');
+        const playerTwoInput = document.querySelector('.player-two-input');
 
         if (gameMode !== 'pvp') {
-            playerTwoName.style.display = 'none';
+            playerTwoInput.style.display = 'none';
         }
     };
 
@@ -96,6 +105,7 @@ const gameBoard = (() => {
 
 
 const gameState = (() => {
+    const endGame = document.querySelector('.endgame');
     const submitPlayers = document.querySelector('.submit');
     const winCondtitions = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
     [0, 3, 6], [1, 4, 7], [2, 5, 8],
@@ -103,6 +113,8 @@ const gameState = (() => {
     let playerOne, playerTwo, playerOneMark, playerTwoMark;
     let turn = true;
     let winner = false;
+    let p1win = 0;
+    let p2win = 0;
 
 
     const getPlayers = () => {
@@ -134,42 +146,52 @@ const gameState = (() => {
             if (currentGameMode === 'pvp') {
                 turn ? gameBoard.fillBoard(playerOneMark, currentCell) : gameBoard.fillBoard(playerTwoMark, currentCell);
                 turn = !turn;
-            } else {
+            } else if (currentGameMode === 'easy'){
                 gameBoard.fillBoard(playerOneMark, currentCell);
                 setTimeout(computerPlay, 300);
+            } else {
+                gameBoard.fillBoard(playerOneMark, currentCell);
             }
         } else {
             return;
         }
     };
 
-    const winCheck = (arr, cells) => {
+    const winCheck = (arr) => {
+        const p1points = document.querySelector('#p1points');
+        const p2points = document.querySelector('#p2points');
+        
         winCondtitions.forEach(condition => {
             if (arr[condition[0]] && arr[condition[0]] === arr[condition[1]] && arr[condition[0]] === arr[condition[2]]) {
                 if (arr[condition[0]] === playerOneMark) {
-                    playerOne.playerWins();
+                    playerOne.playerWins(endGame);
+                    p1win += 1
+                    p1points.textContent = p1win;
                 } else {
-                    playerTwo.playerWins();
+                    playerTwo.playerWins(endGame);
+                    p2win +=1;
+                    p2points.textContent = p2win;
                 }
-
-                cells.forEach(cell => {
-                    cell.removeEventListener('click', playGame);
-                });
 
                 winner = true;
             }
         });
 
+        return winner;
+    };
+
+    const tieCheck = (arr) => {
         const tieCheck = (indexes) => indexes !== '';
 
         if (arr.every(tieCheck) && !winner) {
-            alert('tie');
+            endGame.textContent = 'Tie!';
         };
     };
 
     const resetValues = () => {
         turn = true;
         winner = false;
+        endGame.textContent = '';
     };
 
     const computerPlay = () => {
@@ -180,11 +202,16 @@ const gameState = (() => {
         }
     };
 
+    const minmax = (board, player) => {
+        
+    };
+
     submitPlayers.addEventListener('click', getPlayers);
 
     return {
         playGame,
         winCheck,
-        resetValues
+        resetValues,
+        tieCheck, 
     }
 })();

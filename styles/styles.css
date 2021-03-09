@@ -1,7 +1,9 @@
 :root {
-    --background-color: #eaac8b;
-    --grid-borders: #355070;
-    --mark-color: #820263;
+    --background-color: #81A4CD;
+    --grid-borders: #1A3038;
+    --mark-color: #C33C54;
+    --gameboard-background: #DBE4EE;
+    --supporting-color: #F17300;
 }
 
 * {
@@ -11,6 +13,14 @@
 body {
     background-color: var(--background-color);
     position: relative;
+    overflow: hidden;
+}
+
+h1 {
+    margin-top: 50px;
+    color: white;
+    font-size: 40px;
+    text-shadow: 2px 2px 10px var(--grid-borders);
 }
 
 .container {
@@ -24,11 +34,14 @@ body {
     position: absolute;
     height: 100vh;
     width: 100vw;
-    background-color: rgb(143, 188, 143);
+    background-color: var(--background-color);
     display: grid;
     grid-template-columns: 300px;
     grid-template-rows: repeat(4, 100px);
     justify-content: center;
+    z-index: 100;
+    color: white;
+    text-shadow: 2px 2px 10px var(--grid-borders);
 }
 
 .start-screen h2 {
@@ -43,6 +56,38 @@ body {
     height: 75%;
     text-transform: uppercase;
     font-size: 17px;
+    border: 3px solid var(--grid-borders);
+    box-shadow: 0 1px 2px var(--grid-borders);
+}
+
+.gamemode:hover {
+    background-color: var(--grid-borders);
+    border: 3px solid var(--gameboard-background);
+    color: white;
+}
+
+.player-names {
+    position: absolute;
+    display: grid;
+    width: 100vw;
+    height: 100vw;
+    z-index: 99;
+    background-color: var(--background-color);
+}
+
+.player-names label {
+    text-transform: uppercase;
+    color: white;
+    font-weight: 900;
+}
+
+.player-one-input {
+    margin-top: 20vh;
+    margin-bottom: 50px;
+}
+
+.submit {
+    margin-top: 30px;
 }
 
 .another-player {
@@ -60,6 +105,10 @@ body {
 .player-scores {
     margin-top: 5vh;
     font-size: 20px;
+    color: white;
+    font-weight: 700;
+    font-size: 26px;
+    text-shadow: 2px 2px 10px var(--grid-borders);
 }
 
 .player-scores .container{
@@ -92,6 +141,16 @@ body {
     width: 10%;
     place-self: center;
     visibility: visible;
+    padding: 10px;
+    border: 1px solid var(--grid-borders);
+    text-transform: uppercase;
+    font-size: 20px;
+}
+
+.restart:hover {
+    background-color: var(--grid-borders);
+    border: 1px solid var(--gameboard-background);
+    color: white;
 }
 
 #p1points, #p2points {
@@ -111,8 +170,10 @@ body {
 .gameboard div {
     font-size: 80px;
     display: grid;
+    background-color: var(--gameboard-background);
     align-items: center;
     border: 1px solid var(--grid-borders);
+    cursor: pointer;
 }
 
 .gameboard div:nth-child(1), .gameboard div:nth-child(4), .gameboard div:nth-child(7) {
