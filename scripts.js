@@ -100,6 +100,7 @@ const gameBoard = (() => {
         fillBoard,
         getIndexOfEmptyCells,
         getGameMode,
+        board,
     }
 })();
 
@@ -112,7 +113,6 @@ const gameState = (() => {
     [0, 4, 8], [2, 4, 6]];
     let playerOne, playerTwo, playerOneMark, playerTwoMark;
     let turn = true;
-    let winner = false;
     let p1win = 0;
     let p2win = 0;
 
@@ -146,34 +146,39 @@ const gameState = (() => {
             if (currentGameMode === 'pvp') {
                 turn ? gameBoard.fillBoard(playerOneMark, currentCell) : gameBoard.fillBoard(playerTwoMark, currentCell);
                 turn = !turn;
+                minmax(gameBoard.board, playerOneMark);
             } else if (currentGameMode === 'easy'){
                 gameBoard.fillBoard(playerOneMark, currentCell);
                 setTimeout(computerPlay, 300);
             } else {
                 gameBoard.fillBoard(playerOneMark, currentCell);
+                setTimeout(unbeatableAi, 300);
             }
         } else {
             return;
         }
+
+        
     };
 
     const winCheck = (arr) => {
         const p1points = document.querySelector('#p1points');
         const p2points = document.querySelector('#p2points');
+        let winner;
         
         winCondtitions.forEach(condition => {
             if (arr[condition[0]] && arr[condition[0]] === arr[condition[1]] && arr[condition[0]] === arr[condition[2]]) {
                 if (arr[condition[0]] === playerOneMark) {
-                    playerOne.playerWins(endGame);
+                    /* playerOne.playerWins(endGame);
                     p1win += 1
-                    p1points.textContent = p1win;
+                    p1points.textContent = p1win; */
+                    winner = playerOneMark;
                 } else {
-                    playerTwo.playerWins(endGame);
+                    /* playerTwo.playerWins(endGame);
                     p2win +=1;
-                    p2points.textContent = p2win;
+                    p2points.textContent = p2win; */
+                    winner = playerTwoMark;
                 }
-
-                winner = true;
             }
         });
 
@@ -183,27 +188,86 @@ const gameState = (() => {
     const tieCheck = (arr) => {
         const tieCheck = (indexes) => indexes !== '';
 
-        if (arr.every(tieCheck) && !winner) {
-            endGame.textContent = 'Tie!';
+        if (arr.every(tieCheck)) {
+            return true;
         };
+
+        return false;
     };
 
     const resetValues = () => {
         turn = true;
-        winner = false;
+        winner = undefined;
         endGame.textContent = '';
     };
 
     const computerPlay = () => {
-        if (!winner) {
+        if (winner === undefined) {
             const freeCells = gameBoard.getIndexOfEmptyCells();
             const choice = freeCells[Math.round(Math.random() * (freeCells.length - 1))];
             gameBoard.fillBoard(playerTwoMark, choice);
         }
     };
 
-    const minmax = (board, player) => {
+    const unbeatableAi = () => {
         
+            const move = minmax(gameBoard.board, playerTwoMark).index;
+            gameBoard.fillBoard(playerTwoMark, move);
+        
+    };
+
+    const minmax = (board, player) => {
+        if (tieCheck(board)) {
+            return {score: 0};
+        } else if (winCheck(board) === playerOneMark) {
+            return {score: -10};
+        } else if (winCheck(board) === playerTwoMark) {
+            return {score: 10};
+        }
+
+        let freeCells = gameBoard.getIndexOfEmptyCells();
+        let moves = [];
+
+        for (let i = 0; i < freeCells.length; i++) {
+            let index = freeCells[i];
+            let move = {};
+            move.index = index;
+            let savedBoard = board[index];
+            board[index] = player;
+
+            if (player === playerTwoMark) {
+                move.score = minmax(board, playerOneMark).score;
+            } else {
+                move.score = minmax(board, playerTwoMark).score;
+            }
+
+            board[index] = savedBoard;
+            moves.push(move);
+        }
+
+        let bestMove;
+
+        if (player === playerTwoMark) {
+            let bestScore = -1000
+
+            for (let i = 0; i < moves.length; i++) {
+                if (moves[i].score > bestScore) {
+                    bestScore = moves[i].score;
+                    bestMove = moves[i];
+                }
+            }
+        } else {
+            let bestScore = 1000
+
+            for (let i = 0; i < moves.length; i++) {
+                if (moves[i].score < bestScore) {
+                    bestScore = moves[i].score;
+                    bestMove = moves[i];
+                }
+            }
+        }
+
+        return bestMove;
     };
 
     submitPlayers.addEventListener('click', getPlayers);
@@ -212,6 +276,9 @@ const gameState = (() => {
         playGame,
         winCheck,
         resetValues,
-        tieCheck, 
+        tieCheck,
+        minmax,
+        playerTwoMark,
+        playerOneMark 
     }
 })();
