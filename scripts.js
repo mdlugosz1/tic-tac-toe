@@ -54,13 +54,15 @@ const dom = (() => {
 })();
 
 const gameBoard = (() => {
-    let board = ['', '', '', '', '', '', '', '', ''];
+    let board = ['X', 'O', '', '', 'O', '', 'O', 'X', 'X'];
 
     const _renederBoard = () => {
         for (let i = 0; i < board.length; i++) {
             dom.cells[i].textContent = board[i];
         }
     };
+
+    _renederBoard();
 
     const fillBoard = (playerMark, cell) => {
         if (board[cell] === '') {
@@ -137,10 +139,11 @@ const gameState = (() => {
         const currentCell = e.target.getAttribute('id');
         const currentGameMode = dom.getGameMode();
         
-        if (e.target.textContent === '' && !_showScores()) {
+        if (e.target.textContent === '') {
             if (currentGameMode === 'pvp') {
                 turn ? gameBoard.fillBoard(playerOne.getMark(), currentCell) : gameBoard.fillBoard(playerTwo.getMark(), currentCell);
                 turn = !turn;
+                _showScores();
             } else {
                 gameBoard.fillBoard(playerOne.getMark(), currentCell);
 
@@ -153,8 +156,6 @@ const gameState = (() => {
         } else {
             return;
         }
-
-        _showScores();
     };
 
     const winCheck = (arr, player) => {
@@ -197,15 +198,17 @@ const gameState = (() => {
     };
 
     const _minmax = (board, player) => {
-        if (tieCheck(board)) {
-            return {score: 0};
-        } else if (winCheck(board, playerOne)) {
+        const freeCells = gameBoard.getIndexOfEmptyCells();
+
+        if (winCheck(board, playerOne)) {
             return {score: -10};
         } else if (winCheck(board, playerTwo)) {
             return {score: 10};
-        }
+        } else if (tieCheck(board)) {
+            return {score: 0};
+        } 
 
-        const freeCells = gameBoard.getIndexOfEmptyCells();
+        
         let moves = [];
 
         for (let i = 0; i < freeCells.length; i++) {
@@ -228,7 +231,7 @@ const gameState = (() => {
         let bestMove;
 
         if (player === playerTwo.getMark()) {
-            let bestScore = -1000
+            let bestScore = -10000;
 
             for (let i = 0; i < moves.length; i++) {
                 if (moves[i].score > bestScore) {
@@ -236,8 +239,8 @@ const gameState = (() => {
                     bestMove = moves[i];
                 }
             }
-        } else {
-            let bestScore = 1000
+        } else if (player === playerOne.getMark()){
+            let bestScore = 10000;
 
             for (let i = 0; i < moves.length; i++) {
                 if (moves[i].score < bestScore) {
@@ -246,7 +249,7 @@ const gameState = (() => {
                 }
             }
         }
-
+        
         return bestMove;
     };
 
@@ -287,4 +290,3 @@ const gameState = (() => {
         resetValues,
     }
 })();
-
