@@ -18,7 +18,7 @@ const dom = (() => {
     const cells = board.querySelectorAll('div');
     let gameMode = '';
 
-    const _divListeners = () => {
+    const divListeners = () => {
         const restartButton = document.querySelector('.restart');
         const gamemodeChoice = document.querySelectorAll('[data-game-mode]');
         const submitPlayers = document.querySelector('.submit');
@@ -45,24 +45,23 @@ const dom = (() => {
         return gameMode;
     };
 
-    window.addEventListener('load', _divListeners);
+    window.addEventListener('load', divListeners);
 
     return {
         getGameMode,
+        divListeners,
         cells, 
     }
 })();
 
 const gameBoard = (() => {
-    let board = ['X', 'O', '', '', 'O', '', 'O', 'X', 'X'];
+    let board = ['', '', '', '', '', '', '', '', ''];
 
     const _renederBoard = () => {
         for (let i = 0; i < board.length; i++) {
             dom.cells[i].textContent = board[i];
         }
     };
-
-    _renederBoard();
 
     const fillBoard = (playerMark, cell) => {
         if (board[cell] === '') {
@@ -93,6 +92,7 @@ const gameBoard = (() => {
         }
 
         gameState.resetValues();
+        dom.divListeners();
         _renederBoard();
     };
     
@@ -143,7 +143,6 @@ const gameState = (() => {
             if (currentGameMode === 'pvp') {
                 turn ? gameBoard.fillBoard(playerOne.getMark(), currentCell) : gameBoard.fillBoard(playerTwo.getMark(), currentCell);
                 turn = !turn;
-                _showScores();
             } else {
                 gameBoard.fillBoard(playerOne.getMark(), currentCell);
 
@@ -152,10 +151,13 @@ const gameState = (() => {
                 } else {
                     setTimeout(_unbeatableAi, 300);
                 }  
-            } 
+            }               
+        
         } else {
             return;
         }
+
+        _showScores(dom.cells);
     };
 
     const winCheck = (arr, player) => {
@@ -187,14 +189,14 @@ const gameState = (() => {
             const freeCells = gameBoard.getIndexOfEmptyCells();
             const choice = freeCells[Math.round(Math.random() * (freeCells.length - 1))];
             gameBoard.fillBoard(playerTwo.getMark(), choice);
-            _showScores();
+            _showScores(dom.cells);
         }
     };
 
     const _unbeatableAi = () => {
         const move = _minmax(gameBoard.board, playerTwo.getMark()).index;
         gameBoard.fillBoard(playerTwo.getMark(), move);
-        _showScores();
+        _showScores(dom.cells);
     };
 
     const _minmax = (board, player) => {
@@ -253,7 +255,7 @@ const gameState = (() => {
         return bestMove;
     };
 
-    const _showScores = () => {
+    const _showScores = (cells) => {
         const showp1points = document.querySelector('#p1points');
         const showp2points = document.querySelector('#p2points');
 
@@ -261,13 +263,14 @@ const gameState = (() => {
             playerTwo.playerWins(results);
             p2points += 1;
             showp2points.textContent = p2points;
-            return true;
+            cells.forEach(cell => {cell.removeEventListener('click', playGame)});
         }
 
         if (winCheck(gameBoard.board, playerOne)) {
             playerOne.playerWins(results);
             p1points += 1;
             showp1points.textContent = p1points;
+            cells.forEach(cell => {cell.removeEventListener('click', playGame)});
             return true;
         }
 
