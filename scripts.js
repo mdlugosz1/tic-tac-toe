@@ -13,18 +13,52 @@ const Player = (name, mark) => {
     }
 };
 
-const gameBoard = (() => {
-    const gameBoard = document.querySelector('.gameboard');
-    const cells = gameBoard.querySelectorAll('div');
-    const restartButton = document.querySelector('.restart');
-    const gamemodeChoice = document.querySelectorAll('[data-game-mode]');
-    const startScreen = document.querySelector('.start-screen');
+const dom = (() => {
+    const board = document.querySelector('.gameboard');
+    const cells = board.querySelectorAll('div');
     let gameMode = '';
+
+    const _divListeners = () => {
+        const restartButton = document.querySelector('.restart');
+        const gamemodeChoice = document.querySelectorAll('[data-game-mode]');
+        const submitPlayers = document.querySelector('.submit');
+
+        cells.forEach(cell => {cell.addEventListener('click', gameState.playGame);});
+        gamemodeChoice.forEach(gamemode => {gamemode.addEventListener('click', _setGameMode);});
+        restartButton.addEventListener('click', gameBoard.resetBoard);
+        submitPlayers.addEventListener('click', gameState.getPlayers);
+    };
+
+    const _setGameMode = (e) => {
+        const startScreen = document.querySelector('.start-screen');
+        const playerTwoInput = document.querySelector('.player-two-input');
+
+        startScreen.classList.add('nodisplay');
+        gameMode = e.target.dataset.gameMode;
+
+        if (gameMode !== 'pvp') {
+            playerTwoInput.classList.add('nodisplay');
+        }
+    };
+
+    const getGameMode = () => {
+        return gameMode;
+    };
+
+    window.addEventListener('load', _divListeners);
+
+    return {
+        getGameMode,
+        cells, 
+    }
+})();
+
+const gameBoard = (() => {
     let board = ['', '', '', '', '', '', '', '', ''];
 
-    const renederBoard = () => {
+    const _renederBoard = () => {
         for (let i = 0; i < board.length; i++) {
-            cells[i].textContent = board[i];
+            dom.cells[i].textContent = board[i];
         }
     };
 
@@ -35,17 +69,7 @@ const gameBoard = (() => {
             return;
         }
 
-        renederBoard();
-
-        let isWin = gameState.winCheck(board);
-
-        if (isWin) {
-            cells.forEach(cell => {
-                cell.removeEventListener('click', gameState.playGame);
-            });
-        }
-
-        gameState.tieCheck(board);
+        _renederBoard();
     };
 
     const getIndexOfEmptyCells = () => {
@@ -53,7 +77,7 @@ const gameBoard = (() => {
         let emptyArr = [];
         let index = board.indexOf(element);
 
-        while (index != -1) {
+        while (index !== -1) {
             emptyArr.push(index);
             index = board.indexOf(element, index + 1);
         }
@@ -61,61 +85,33 @@ const gameBoard = (() => {
         return emptyArr;
     };
 
-    const restartGame = () => {
+    const resetBoard = () => {
         for (let i = 0; i < board.length; i++) {
             board[i] = '';
         }
 
         gameState.resetValues();
-        renederBoard();
-        divListeners();
-    };
-
-    const divListeners = () => {
-        cells.forEach(cell => {
-            cell.addEventListener('click', gameState.playGame);
-        });
-
-        gamemodeChoice.forEach(gamemode => {gamemode.addEventListener('click', setGameMode);});
-    };
-
-    const setGameMode = (e) => {
-        startScreen.style.display = 'none';
-        gameMode = e.target.dataset.gameMode;
-        const playerTwoInput = document.querySelector('.player-two-input');
-
-        if (gameMode !== 'pvp') {
-            playerTwoInput.style.display = 'none';
-        }
-    };
-
-    const getGameMode = () => {
-        return gameMode;
+        _renederBoard();
     };
     
-    window.addEventListener('load', divListeners);
-    restartButton.addEventListener('click', restartGame);
-
     return {
         fillBoard,
         getIndexOfEmptyCells,
-        getGameMode,
-        board,
+        resetBoard,
+        board
     }
 })();
 
 
 const gameState = (() => {
-    const endGame = document.querySelector('.endgame');
-    const submitPlayers = document.querySelector('.submit');
+    const results = document.querySelector('.results');
     const winCondtitions = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
     [0, 3, 6], [1, 4, 7], [2, 5, 8],
     [0, 4, 8], [2, 4, 6]];
-    let playerOne, playerTwo, playerOneMark, playerTwoMark;
+    let playerOne, playerTwo;
+    let p1points = 0;
+    let p2points = 0;
     let turn = true;
-    let p1win = 0;
-    let p2win = 0;
-
 
     const getPlayers = () => {
         const playerNames = document.querySelector('.player-names');
@@ -123,61 +119,51 @@ const gameState = (() => {
         const playerTwoName = document.querySelector('#player-two');
         const p1 = document.querySelector('#p1name');
         const p2 = document.querySelector('#p2name');
+        
         playerOne = Player(playerOneName.value, 'X');
-
-        if (gameBoard.getGameMode() === 'pvp') {
+        
+        if (dom.getGameMode() === 'pvp') {
             playerTwo = Player(playerTwoName.value, 'O');
         } else {
-            playerTwo = Player('AI', 'O');
+            playerTwo = Player('Bot', 'O');
         }
 
-        playerOneMark = playerOne.getMark();
-        playerTwoMark = playerTwo.getMark();
         p1.textContent = playerOne.getName();
         p2.textContent = playerTwo.getName();
-        playerNames.style.display = 'none';
+        playerNames.classList.add('nodisplay');
     };
 
     const playGame = (e) => {
         const currentCell = e.target.getAttribute('id');
-        const currentGameMode = gameBoard.getGameMode();
+        const currentGameMode = dom.getGameMode();
         
-        if (e.target.textContent === '') {
+        if (e.target.textContent === '' && !_showScores()) {
             if (currentGameMode === 'pvp') {
-                turn ? gameBoard.fillBoard(playerOneMark, currentCell) : gameBoard.fillBoard(playerTwoMark, currentCell);
+                turn ? gameBoard.fillBoard(playerOne.getMark(), currentCell) : gameBoard.fillBoard(playerTwo.getMark(), currentCell);
                 turn = !turn;
-                minmax(gameBoard.board, playerOneMark);
-            } else if (currentGameMode === 'easy'){
-                gameBoard.fillBoard(playerOneMark, currentCell);
-                setTimeout(computerPlay, 300);
             } else {
-                gameBoard.fillBoard(playerOneMark, currentCell);
-                setTimeout(unbeatableAi, 300);
-            }
+                gameBoard.fillBoard(playerOne.getMark(), currentCell);
+
+                if (currentGameMode === 'easy') {
+                    setTimeout(_computerPlay, 300);
+                } else {
+                    setTimeout(_unbeatableAi, 300);
+                }  
+            } 
         } else {
             return;
         }
 
-        
+        _showScores();
     };
 
-    const winCheck = (arr) => {
-        const p1points = document.querySelector('#p1points');
-        const p2points = document.querySelector('#p2points');
+    const winCheck = (arr, player) => {
         let winner;
         
         winCondtitions.forEach(condition => {
             if (arr[condition[0]] && arr[condition[0]] === arr[condition[1]] && arr[condition[0]] === arr[condition[2]]) {
-                if (arr[condition[0]] === playerOneMark) {
-                    /* playerOne.playerWins(endGame);
-                    p1win += 1
-                    p1points.textContent = p1win; */
-                    winner = playerOneMark;
-                } else {
-                    /* playerTwo.playerWins(endGame);
-                    p2win +=1;
-                    p2points.textContent = p2win; */
-                    winner = playerTwoMark;
+                if (arr[condition[0]] === player.getMark()) {
+                    winner = player.getMark();
                 }
             }
         });
@@ -195,37 +181,31 @@ const gameState = (() => {
         return false;
     };
 
-    const resetValues = () => {
-        turn = true;
-        winner = undefined;
-        endGame.textContent = '';
-    };
-
-    const computerPlay = () => {
-        if (winner === undefined) {
+    const _computerPlay = () => {
+        if (!winCheck(gameBoard.board, playerOne)) {
             const freeCells = gameBoard.getIndexOfEmptyCells();
             const choice = freeCells[Math.round(Math.random() * (freeCells.length - 1))];
-            gameBoard.fillBoard(playerTwoMark, choice);
+            gameBoard.fillBoard(playerTwo.getMark(), choice);
+            _showScores();
         }
     };
 
-    const unbeatableAi = () => {
-        
-            const move = minmax(gameBoard.board, playerTwoMark).index;
-            gameBoard.fillBoard(playerTwoMark, move);
-        
+    const _unbeatableAi = () => {
+        const move = _minmax(gameBoard.board, playerTwo.getMark()).index;
+        gameBoard.fillBoard(playerTwo.getMark(), move);
+        _showScores();
     };
 
-    const minmax = (board, player) => {
+    const _minmax = (board, player) => {
         if (tieCheck(board)) {
             return {score: 0};
-        } else if (winCheck(board) === playerOneMark) {
+        } else if (winCheck(board, playerOne)) {
             return {score: -10};
-        } else if (winCheck(board) === playerTwoMark) {
+        } else if (winCheck(board, playerTwo)) {
             return {score: 10};
         }
 
-        let freeCells = gameBoard.getIndexOfEmptyCells();
+        const freeCells = gameBoard.getIndexOfEmptyCells();
         let moves = [];
 
         for (let i = 0; i < freeCells.length; i++) {
@@ -235,10 +215,10 @@ const gameState = (() => {
             let savedBoard = board[index];
             board[index] = player;
 
-            if (player === playerTwoMark) {
-                move.score = minmax(board, playerOneMark).score;
+            if (player === playerTwo.getMark()) {
+                move.score = _minmax(board, playerOne.getMark()).score;
             } else {
-                move.score = minmax(board, playerTwoMark).score;
+                move.score = _minmax(board, playerTwo.getMark()).score;
             }
 
             board[index] = savedBoard;
@@ -247,7 +227,7 @@ const gameState = (() => {
 
         let bestMove;
 
-        if (player === playerTwoMark) {
+        if (player === playerTwo.getMark()) {
             let bestScore = -1000
 
             for (let i = 0; i < moves.length; i++) {
@@ -270,15 +250,41 @@ const gameState = (() => {
         return bestMove;
     };
 
-    submitPlayers.addEventListener('click', getPlayers);
+    const _showScores = () => {
+        const showp1points = document.querySelector('#p1points');
+        const showp2points = document.querySelector('#p2points');
+
+        if (winCheck(gameBoard.board, playerTwo)) {
+            playerTwo.playerWins(results);
+            p2points += 1;
+            showp2points.textContent = p2points;
+            return true;
+        }
+
+        if (winCheck(gameBoard.board, playerOne)) {
+            playerOne.playerWins(results);
+            p1points += 1;
+            showp1points.textContent = p1points;
+            return true;
+        }
+
+        if (tieCheck(gameBoard.board)) {
+            results.textContent = 'Draw';
+        }
+    };
+
+    const resetValues = () => {
+        results.textContent = '';
+        turn = true;
+    };
 
     return {
         playGame,
         winCheck,
         resetValues,
         tieCheck,
-        minmax,
-        playerTwoMark,
-        playerOneMark 
+        getPlayers,
+        resetValues,
     }
 })();
+
