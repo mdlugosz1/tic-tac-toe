@@ -122,7 +122,7 @@ const gameState = (() => {
         const p1 = document.querySelector('#p1name');
         const p2 = document.querySelector('#p2name');
 
-        if (playerOneName.value === '' || playerTwoName.value === '') {
+        if (playerOneName.value === '') {
             return;
         } else {
             playerOne = Player(playerOneName.value, 'X');
