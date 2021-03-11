@@ -121,18 +121,22 @@ const gameState = (() => {
         const playerTwoName = document.querySelector('#player-two');
         const p1 = document.querySelector('#p1name');
         const p2 = document.querySelector('#p2name');
-        
-        playerOne = Player(playerOneName.value, 'X');
-        
-        if (dom.getGameMode() === 'pvp') {
-            playerTwo = Player(playerTwoName.value, 'O');
-        } else {
-            playerTwo = Player('Bot', 'O');
-        }
 
-        p1.textContent = playerOne.getName();
-        p2.textContent = playerTwo.getName();
-        playerNames.classList.add('nodisplay');
+        if (playerOneName.value === '' || playerTwoName.value === '') {
+            return;
+        } else {
+            playerOne = Player(playerOneName.value, 'X');
+
+            if (dom.getGameMode() === 'pvp') {
+                playerTwo = Player(playerTwoName.value, 'O');
+            } else {
+                playerTwo = Player('Bot', 'O');
+            }
+
+            p1.textContent = playerOne.getName();
+            p2.textContent = playerTwo.getName();
+            playerNames.classList.add('nodisplay');
+        }
     };
 
     const playGame = (e) => {
